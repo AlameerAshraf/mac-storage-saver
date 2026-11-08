@@ -1,0 +1,18 @@
+{
+  "name": "mac-storage-saver",
+  "description": "Free disk space on a Mac safely: scan, classify, report, and delete only what you approve.",
+  "owner": {
+    "name": "Alameer Ashraf",
+    "url": "https://github.com/AlameerAshraf"
+  },
+  "plugins": [
+    {
+      "name": "mac-storage-saver",
+      "description": "Find what's filling your Mac's disk and clean only what you approve: read-only scan, four-tier classification, an HTML report with an approval checklist, and safe per-item cleanup.",
+      "source": "./plugins/mac-storage-saver",
+      "version": "1.0.0",
+      "category": "productivity",
+      "tags": ["macos", "disk-space", "cleanup", "xcode", "simulator"]
+    }
+  ]
+}

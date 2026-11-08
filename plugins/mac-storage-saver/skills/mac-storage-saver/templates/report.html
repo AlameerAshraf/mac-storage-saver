@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!--MSS:HEAD-START-->
+<title>__REPORT_TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* mac-storage-saver report. Layout: one reading column. Before/after free space, cleaned items,
+   capacity bar, ranked folders, one list per remaining tier, then a fixed approval tray. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --fg: #141820;
+  --muted: #5a6473;
+  --line: #dce1e8;
+  --accent: #3346c8;
+  --on-accent: #ffffff;
+  --hover: #f7f8fb;
+  --sel: #eef1fd;
+  --shadow: rgba(20, 24, 32, 0.08);
+
+  --safe: #1d8a52;   --safe-bg: #e4f3ea;
+  --re: #2a72b8;     --re-bg: #e3edf8;
+  --call: #b2700a;   --call-bg: #f8eedd;
+  --keep: #7b8594;   --keep-bg: #eceff3;
+  --stuck: #8a55c4;  --stuck-bg: #f1e9fa;
+  --sys: #c6ccd5;
+  --free: #e7ebf0;
+
+  --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", -apple-system, "Segoe UI", Helvetica, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #161a21; --fg: #e6e9ef; --muted: #98a2b1; --line: #282e38;
+    --accent: #8d9cff; --on-accent: #0e1116; --hover: #1b2029; --sel: #1d2338; --shadow: rgba(0, 0, 0, 0.45);
+    --safe: #4cc283; --safe-bg: #13281d;
+    --re: #5ea8ec;   --re-bg: #122335;
+    --call: #e4a23f; --call-bg: #2c2113;
+    --keep: #808a99; --keep-bg: #1d2129;
+    --stuck: #b48ae8; --stuck-bg: #241b33;
+    --sys: #3a414c; --free: #1f242c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161a21; --fg: #e6e9ef; --muted: #98a2b1; --line: #282e38;
+  --accent: #8d9cff; --on-accent: #0e1116; --hover: #1b2029; --sel: #1d2338; --shadow: rgba(0, 0, 0, 0.45);
+  --safe: #4cc283; --safe-bg: #13281d;
+  --re: #5ea8ec;   --re-bg: #122335;
+  --call: #e4a23f; --call-bg: #2c2113;
+  --keep: #808a99; --keep-bg: #1d2129;
+  --stuck: #b48ae8; --stuck-bg: #241b33;
+  --sys: #3a414c; --free: #1f242c;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.55; }
+.wrap {
+  max-width: 980px; margin: 0 auto;
+  padding-block: 44px 150px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: flex; flex-direction: column; gap: 56px;
+}
+h1, h2 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; font-weight: 700; }
+h1 { font-size: clamp(2.1rem, 5.4vw, 3rem); line-height: 1.04; }
+h2 { font-size: 1.4rem; line-height: 1.2; }
+p { margin: 0; }
+code { font-family: var(--font-mono); font-size: 0.92em; }
+.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px 16px; }
+.sec-head .muted { font-size: 13.5px; }
+
+.top { display: flex; flex-direction: column; gap: 14px; }
+.lede { max-width: 64ch; font-size: 1.08rem; }
+.lede b { font-weight: 600; }
+
+/* Before / after */
+.compare { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; }
+.cmp-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 120px; gap: 16px; align-items: center; }
+.cmp-row .lbl { font-size: 14px; color: var(--muted); }
+.cmp-row .val { text-align: right; font-size: 15px; font-weight: 500; }
+.cmp-track { height: 22px; border-radius: 6px; background: var(--sys); overflow: hidden; display: flex; justify-content: flex-end; }
+.cmp-track i { display: block; height: 100%; background: var(--safe); }
+.cmp-track.before i { background: var(--keep); }
+.cmp-foot { font-size: 13.5px; color: var(--muted); }
+.cmp-foot b { color: var(--fg); font-weight: 600; }
+@media (max-width: 560px) {
+  .cmp-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .cmp-row .cmp-track { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* Cleaned list */
+.done { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; list-style: none; margin: 0; padding: 0; }
+.done li { display: grid; grid-template-columns: 22px minmax(0, 1fr) 84px; gap: 14px; padding: 12px 18px; border-top: 1px solid var(--line); align-items: start; }
+.done li:first-child { border-top: 0; }
+.done .tick { color: var(--safe); font-weight: 700; line-height: 1.5; }
+.done .what { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.done .what strong { font-weight: 600; }
+.done .what span { font-size: 13.5px; color: var(--muted); overflow-wrap: anywhere; }
+.done .size { text-align: right; font-weight: 500; white-space: nowrap; }
+.done li.total { background: var(--hover); }
+.done li.total .what strong { font-family: var(--font-display); }
+.stuck-box { background: var(--stuck-bg); border-radius: 10px; padding: 14px 18px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: baseline; }
+.stuck-box strong { color: var(--stuck); font-weight: 600; }
+.stuck-box p { grid-column: 1 / -1; font-size: 14px; }
+.stuck-box .num { color: var(--stuck); font-weight: 500; }
+@media (max-width: 560px) { .done li { grid-template-columns: 18px minmax(0, 1fr) 64px; padding: 12px 14px; gap: 10px; } }
+
+/* Capacity bar */
+.bar { display: flex; height: 36px; border-radius: 7px; overflow: hidden; background: var(--free); border: 1px solid var(--line); }
+.bar span { display: block; height: 100%; min-width: 2px; }
+.bar span + span { box-shadow: inset 2px 0 0 var(--surface); }
+.s-safe { background: var(--safe); }
+.s-re { background: var(--re); }
+.s-call { background: var(--call); }
+.s-stuck { background: var(--stuck); }
+.s-keep { background: var(--keep); }
+.s-sys { background: var(--sys); }
+.s-free { background: var(--free); }
+.legend { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 20px; font-size: 13.5px; }
+.legend li { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.legend .sw { flex: none; width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--line); }
+.legend .num { margin-left: auto; color: var(--muted); }
+
+/* Tier figures */
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.fig { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fig .big { font-family: var(--font-display); font-size: 2.1rem; line-height: 1; font-weight: 700; font-variant-numeric: tabular-nums; }
+.fig .big small { font-size: 1rem; font-weight: 600; color: var(--muted); margin-left: 3px; }
+.fig p { font-size: 13.5px; color: var(--muted); }
+
+.chip { align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 12px; font-weight: 500; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.t-safe, .t-done { color: var(--safe); background: var(--safe-bg); }
+.t-re { color: var(--re); background: var(--re-bg); }
+.t-call { color: var(--call); background: var(--call-bg); }
+.t-keep { color: var(--keep); background: var(--keep-bg); }
+
+/* Ranked folders */
+.rank { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.rank li, .axis { display: grid; grid-template-columns: minmax(0, 250px) minmax(0, 1fr) 64px; gap: 4px 16px; align-items: center; }
+.rank li { padding: 6px 0; }
+.rank .lbl { min-width: 0; font-size: 14px; line-height: 1.3; }
+.rank .lbl small { display: block; font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.track { height: 14px; border-radius: 3px; background-color: var(--free); background-image: linear-gradient(to right, var(--line) 1px, transparent 1px); background-size: 25% 100%; }
+.track i { display: block; height: 100%; border-radius: 3px; }
+.rank .val { text-align: right; font-size: 14px; }
+.axis { font-family: var(--font-mono); font-size: 11px; color: var(--muted); padding-bottom: 4px; border-bottom: 1px solid var(--line); margin-bottom: 4px; }
+.ticks { position: relative; height: 14px; }
+.ticks span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.ticks span:first-child { transform: none; }
+.ticks span:last-child { transform: translateX(-100%); }
+@media (max-width: 600px) {
+  .rank li { grid-template-columns: minmax(0, 1fr) 56px; }
+  .rank .lbl { grid-column: 1 / -1; }
+  .axis { display: none; }
+}
+
+/* Tier lists */
+.tier-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 20px; flex-wrap: wrap; }
+.tier-head > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; max-width: 64ch; }
+.tier-title { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tier-head p { color: var(--muted); }
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.row { display: grid; grid-template-columns: 20px minmax(0, 1fr) 128px; gap: 16px; padding: 15px 18px; border-top: 1px solid var(--line); cursor: pointer; align-items: start; }
+.row:first-child { border-top: 0; }
+.row:hover { background: var(--hover); }
+.row:has(input:checked) { background: var(--sel); }
+.row input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--accent); cursor: pointer; }
+.row input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.row-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.row-name { font-weight: 600; }
+.row-path { font-family: var(--font-mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.row-note { font-size: 14px; margin-top: 3px; }
+.row-cmd { font-family: var(--font-mono); font-size: 12px; color: var(--muted); margin-top: 5px; overflow-wrap: anywhere; }
+.row-cmd b { font-weight: 500; color: var(--fg); }
+.row-size { display: flex; flex-direction: column; align-items: flex-end; gap: 7px; }
+.row-size .num { font-size: 1.05rem; font-weight: 500; white-space: nowrap; }
+.row-size .num small { font-size: 0.8rem; color: var(--muted); margin-left: 2px; }
+.meter { width: 100%; height: 6px; border-radius: 3px; background: var(--free); overflow: hidden; }
+.meter i { display: block; height: 100%; }
+@media (max-width: 560px) { .row { grid-template-columns: 20px minmax(0, 1fr) 64px; gap: 12px; padding: 14px; } }
+
+.keep { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.keep li { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 13px 16px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.keep li span { font-size: 13.5px; color: var(--muted); overflow-wrap: anywhere; }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 40px 40px; }
+.notes { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; max-width: 62ch; }
+.notes li::marker { color: var(--muted); }
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 18px; }
+
+/* Approval tray */
+.tray {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -8px 24px var(--shadow);
+  padding-block: 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.tray-in { max-width: 980px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; }
+.tray-text { font-size: 14px; min-width: 0; }
+.tray-text b { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 500; }
+.tray-actions { display: flex; gap: 8px; }
+.btn { font: inherit; font-size: 14px; font-weight: 600; padding: 8px 15px; border-radius: 8px; border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent); cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+.btn.ghost:hover { background: var(--hover); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn.small { font-size: 13px; padding: 5px 11px; }
+#mss-fallback { width: 100%; max-width: 980px; margin: 10px auto 0; display: block; font-family: var(--font-mono); font-size: 12px; min-height: 90px; background: var(--bg); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+@media (prefers-reduced-motion: no-preference) { .row, .btn { transition: background-color 0.12s ease; } }
+</style>
+<!--MSS:HEAD-END-->
+</head>
+<body>
+<!--MSS:BODY-START-->
+<main class="wrap">
+  <header class="top">
+    <p class="eyebrow" id="mss-eyebrow"></p>
+    <h1 id="mss-title"></h1>
+    <p class="lede" id="mss-lede"></p>
+  </header>
+
+  <section id="mss-compare" aria-labelledby="mss-compare-h" hidden>
+    <h2 id="mss-compare-h" class="eyebrow">Free space</h2>
+    <div class="compare" id="mss-compare-box"></div>
+  </section>
+
+  <section id="mss-done-sec" aria-labelledby="mss-done-h" hidden>
+    <div class="sec-head"><h2 id="mss-done-h">Cleaned</h2><span class="chip t-done" id="mss-done-count"></span></div>
+    <ul class="done" id="mss-done"></ul>
+    <div id="mss-stuck" style="display:flex;flex-direction:column;gap:10px"></div>
+  </section>
+
+  <section aria-labelledby="mss-cap-h">
+    <div class="sec-head"><h2 id="mss-cap-h"></h2><span class="num muted" id="mss-cap-sub"></span></div>
+    <div class="bar" id="mss-bar" role="img"></div>
+    <ul class="legend" id="mss-legend"></ul>
+    <div class="figs" id="mss-figs"></div>
+  </section>
+
+  <section id="mss-rank-sec" aria-labelledby="mss-rank-h">
+    <div class="sec-head"><h2 id="mss-rank-h">Biggest folders</h2><span class="muted">Each bar takes the color of the tier most of that folder falls into.</span></div>
+    <div>
+      <div class="axis" aria-hidden="true"><span></span><div class="ticks" id="mss-ticks"></div><span></span></div>
+      <ul class="rank" id="mss-rank"></ul>
+    </div>
+  </section>
+
+  <div id="mss-tiers" style="display:flex;flex-direction:column;gap:56px"></div>
+
+  <section id="mss-keep-sec" aria-labelledby="mss-keep-h">
+    <div class="tier-head"><div>
+      <div class="tier-title"><h2 id="mss-keep-h">Don't touch</h2><span class="chip t-keep">Keep</span></div>
+      <p>macOS and your apps need these, or you chose to keep them.</p>
+    </div></div>
+    <ul class="keep" id="mss-keep"></ul>
+  </section>
+
+  <div class="two">
+    <section id="mss-notes-sec" aria-labelledby="mss-notes-h"><h2 id="mss-notes-h"></h2><ul class="notes" id="mss-notes"></ul></section>
+    <section id="mss-q-sec" aria-labelledby="mss-q-h"><h2 id="mss-q-h">Questions for you</h2><ul class="notes" id="mss-questions"></ul></section>
+  </div>
+
+  <footer id="mss-footer"></footer>
+</main>
+
+<div class="tray" role="region" aria-label="Approval">
+  <div class="tray-in">
+    <p class="tray-text" id="mss-tray-text">Tick the items you approve.</p>
+    <div class="tray-actions">
+      <button type="button" class="btn ghost" id="mss-clear" disabled>Clear</button>
+      <button type="button" class="btn" id="mss-copy" disabled>Copy approval message</button>
+    </div>
+  </div>
+  <textarea id="mss-fallback" hidden readonly aria-label="Approval message to copy"></textarea>
+</div>
+
+<script id="mss-data" type="application/json">__REPORT_DATA__</script>
+<script>
+(function () {
+  "use strict";
+  var DATA = JSON.parse(document.getElementById("mss-data").textContent);
+  var disk = DATA.disk || {};
+  var TOTAL = Number(disk.total_gb) || 0;
+  var FREE = Number(disk.free_gb) || 0;
+  var BEFORE = disk.free_before_gb == null ? null : Number(disk.free_before_gb);
+  var SYS = Number(disk.system_volumes_gb) || 0;
+  var ITEMS = DATA.items || [];
+  var DONE = DATA.done || [];
+  var STUCK = DATA.stuck || [];
+  var RANK = DATA.rank || [];
+  var KEY = "mac-storage-saver-selection";
+
+  var TIERS = [
+    { key: "safe", name: "Safe to clean", desc: "Caches and build output. Tools rebuild these on their own; the cost is a slower first build or test run.", fig: "Rebuilds on its own. The only cost is a slower first build." },
+    { key: "re", name: "Reinstall needed", desc: "Comes back with an install or a download. Remove it for projects and versions you aren't using.", fig: "Comes back with an install or a download." },
+    { key: "call", name: "Your call", desc: "Holds data only you can judge: containers, emulators, chats, videos and app history.", fig: "Data only you can judge: containers, emulators, chats, videos." }
+  ];
+  var COLOR = { safe: "var(--safe)", re: "var(--re)", call: "var(--call)", keep: "var(--keep)", stuck: "var(--stuck)" };
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function fmt(v) { v = Number(v) || 0; return v >= 10 ? String(Math.round(v)) : v.toFixed(1).replace(/\.0$/, ""); }
+  function sum(list) { return list.reduce(function (s, i) { return s + (Number(i.gb) || 0); }, 0); }
+  function pct(v) { return TOTAL ? (v / TOTAL * 100) : 0; }
+  // Text with **bold** and `code` spans, built without innerHTML.
+  function rich(parent, text) {
+    String(text || "").split(/(\*\*[^*]+\*\*|`[^`]+`)/).forEach(function (part) {
+      if (!part) return;
+      if (part.slice(0, 2) === "**" && part.slice(-2) === "**") parent.appendChild(el("b", null, part.slice(2, -2)));
+      else if (part[0] === "`" && part.slice(-1) === "`") parent.appendChild(el("code", null, part.slice(1, -1)));
+      else parent.appendChild(document.createTextNode(part));
+    });
+    return parent;
+  }
+
+  var tierTotal = {};
+  TIERS.forEach(function (t) { tierTotal[t.key] = sum(ITEMS.filter(function (i) { return i.tier === t.key; })); });
+  var stuckTotal = sum(STUCK);
+  var used = Math.max(0, TOTAL - FREE);
+  var other = Math.max(0, used - SYS - tierTotal.safe - tierTotal.re - tierTotal.call - stuckTotal);
+  var gained = DATA.disk_gained_gb != null ? Number(DATA.disk_gained_gb) : (BEFORE != null ? FREE - BEFORE : null);
+  var scanned = DATA.scanned || "";
+
+  // Header
+  $("mss-title").textContent = DATA.title || "Mac Storage Audit";
+  $("mss-eyebrow").textContent = DATA.eyebrow ||
+    (DONE.length && gained != null ? "Updated " + scanned + " · " + fmt(gained) + " GB freed" : "Scanned " + scanned + " · nothing deleted yet");
+  var lede = DATA.lede;
+  if (!lede) {
+    var tail = " Tick the items you approve, copy the message at the bottom and paste it into the chat.";
+    if (BEFORE != null) {
+      lede = "Free space went from **" + fmt(BEFORE) + " GB** to **" + fmt(FREE) + " GB**.";
+      if (tierTotal.safe) lede += " **" + fmt(tierTotal.safe) + " GB** more is safe to clean";
+      if (tierTotal.re) lede += (tierTotal.safe ? ", and " : " ") + "**" + fmt(tierTotal.re) + " GB** comes back with a reinstall";
+      if (tierTotal.safe || tierTotal.re) lede += ".";
+    } else {
+      lede = "Your disk has **" + fmt(FREE) + " GB free** of " + fmt(TOTAL) + " GB. About **" + fmt(tierTotal.safe) +
+        " GB** is cache and build output that rebuilds on its own, and **" + fmt(tierTotal.re) + " GB** more comes back with a reinstall.";
+    }
+    lede += tail;
+  }
+  rich($("mss-lede"), lede);
+
+  // Before / after
+  if (BEFORE != null && TOTAL) {
+    $("mss-compare").hidden = false;
+    $("mss-compare-h").textContent = "Free space on the " + fmt(TOTAL) + " GB disk";
+    var box = $("mss-compare-box");
+    [[disk.before_label || "Before", BEFORE, "before"], [disk.now_label || "Now", FREE, ""]].forEach(function (r) {
+      var row = el("div", "cmp-row");
+      row.appendChild(el("span", "lbl", r[0]));
+      var tr = el("div", "cmp-track" + (r[2] ? " " + r[2] : ""));
+      tr.setAttribute("role", "img");
+      tr.setAttribute("aria-label", fmt(r[1]) + " GB free of " + fmt(TOTAL) + " GB");
+      var fill = el("i");
+      fill.style.width = pct(r[1]).toFixed(2) + "%";
+      tr.appendChild(fill);
+      row.appendChild(tr);
+      row.appendChild(el("span", "val num", fmt(r[1]) + " GB free"));
+      box.appendChild(row);
+    });
+    var foot = el("p", "cmp-foot");
+    rich(foot, "Disk use went from **" + Math.round(100 - pct(BEFORE)) + "%** to **" + Math.round(100 - pct(FREE)) +
+      "%**. macOS frees space in the background after large deletes, so the number may still rise a little.");
+    box.appendChild(foot);
+  }
+
+  // Cleaned items and stuck items
+  if (DONE.length || STUCK.length) {
+    $("mss-done-sec").hidden = false;
+    $("mss-done-count").textContent = DONE.length + (DONE.length === 1 ? " item" : " items");
+    var doneList = $("mss-done");
+    if (!DONE.length) doneList.hidden = true;
+    DONE.forEach(function (d) {
+      var li = el("li");
+      li.appendChild(el("span", "tick", "✓"));
+      var what = el("span", "what");
+      what.appendChild(el("strong", null, d.name));
+      if (d.detail) rich(what.appendChild(el("span")), d.detail);
+      li.appendChild(what);
+      li.appendChild(el("span", "size num", (d.est ? "~" : "") + fmt(d.gb) + " GB"));
+      doneList.appendChild(li);
+    });
+    if (DONE.length > 1) {
+      var tot = el("li", "total");
+      tot.appendChild(el("span"));
+      var tw = el("span", "what");
+      tw.appendChild(el("strong", null, "Total"));
+      tw.appendChild(el("span", null, gained != null ? "Folder sizes deleted. The disk itself gained " + fmt(gained) + " GB." : "Folder sizes deleted."));
+      tot.appendChild(tw);
+      tot.appendChild(el("span", "size num", "~" + fmt(sum(DONE)) + " GB"));
+      doneList.appendChild(tot);
+    }
+    STUCK.forEach(function (s) {
+      var b = el("div", "stuck-box");
+      b.appendChild(el("strong", null, "Stuck: " + s.name));
+      b.appendChild(el("span", "num", fmt(s.gb) + " GB"));
+      if (s.detail) b.appendChild(rich(el("p"), s.detail));
+      $("mss-stuck").appendChild(b);
+    });
+  }
+
+  // Capacity bar
+  $("mss-cap-h").textContent = DONE.length ? "What's left on the disk" : "How the " + fmt(TOTAL) + " GB disk is used";
+  $("mss-cap-sub").textContent = fmt(used) + " GB used · " + fmt(FREE) + " GB free";
+  var segs = [
+    ["safe", "Safe to clean", tierTotal.safe],
+    ["re", "Reinstall needed", tierTotal.re],
+    ["call", "Your call", tierTotal.call],
+    ["stuck", "Stuck", stuckTotal],
+    ["keep", DATA.other_label || "Apps, system, source, not measured", other],
+    ["sys", "macOS volumes", SYS],
+    ["free", "Free", FREE]
+  ].filter(function (s) { return s[2] > 0; });
+  var bar = $("mss-bar"), legend = $("mss-legend");
+  bar.setAttribute("aria-label", segs.map(function (s) { return s[1] + " " + fmt(s[2]) + " GB"; }).join(", "));
+  segs.forEach(function (s) {
+    var span = el("span", "s-" + s[0]);
+    span.style.width = pct(s[2]).toFixed(2) + "%";
+    span.title = s[1] + " · " + fmt(s[2]) + " GB";
+    bar.appendChild(span);
+    var li = el("li");
+    li.appendChild(el("span", "sw s-" + s[0]));
+    li.appendChild(document.createTextNode(s[1]));
+    li.appendChild(el("span", "num", fmt(s[2]) + " GB"));
+    legend.appendChild(li);
+  });
+  TIERS.forEach(function (t) {
+    if (!tierTotal[t.key]) return;
+    var f = el("div", "fig");
+    f.appendChild(el("span", "chip t-" + t.key, t.name));
+    var big = el("span", "big", fmt(tierTotal[t.key]));
+    big.appendChild(el("small", null, "GB"));
+    f.appendChild(big);
+    f.appendChild(el("p", null, t.fig));
+    $("mss-figs").appendChild(f);
+  });
+
+  // Ranked folders
+  if (!RANK.length) {
+    $("mss-rank-sec").hidden = true;
+  } else {
+    var maxGb = Math.max.apply(null, RANK.map(function (r) { return Number(r.gb) || 0; }));
+    var scale = Math.max(20, Math.ceil(maxGb / 20) * 20);
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (f, i, all) {
+      var s = el("span", null, fmt(scale * f) + (i === all.length - 1 ? " GB" : ""));
+      s.style.left = (f * 100) + "%";
+      $("mss-ticks").appendChild(s);
+    });
+    RANK.forEach(function (r) {
+      var li = el("li");
+      var lbl = el("div", "lbl", r.name);
+      if (r.path) lbl.appendChild(el("small", null, r.path));
+      var track = el("div", "track");
+      var fill = el("i");
+      fill.style.width = Math.min(100, (Number(r.gb) || 0) / scale * 100) + "%";
+      fill.style.background = COLOR[r.tier] || COLOR.keep;
+      track.appendChild(fill);
+      li.appendChild(lbl);
+      li.appendChild(track);
+      li.appendChild(el("span", "val num", fmt(r.gb) + " GB"));
+      $("mss-rank").appendChild(li);
+    });
+  }
+
+  // Tier lists with checkboxes
+  var boxes = {}, syncs = [];
+  var meterScale = Math.max(20, Math.ceil(Math.max.apply(null, ITEMS.map(function (i) { return Number(i.gb) || 0; }).concat([1])) / 20) * 20);
+  TIERS.forEach(function (t) {
+    var items = ITEMS.filter(function (i) { return i.tier === t.key; });
+    if (!items.length) return;
+    var sec = el("section");
+    sec.setAttribute("aria-labelledby", "mss-h-" + t.key);
+    var head = el("div", "tier-head");
+    var left = el("div");
+    var title = el("div", "tier-title");
+    var h = el("h2", null, t.name);
+    h.id = "mss-h-" + t.key;
+    title.appendChild(h);
+    title.appendChild(el("span", "chip t-" + t.key, fmt(tierTotal[t.key]) + " GB"));
+    left.appendChild(title);
+    left.appendChild(el("p", null, t.desc));
+    head.appendChild(left);
+    var all = el("button", "btn ghost small", "Select all");
+    all.type = "button";
+    head.appendChild(all);
+    sec.appendChild(head);
+
+    var list = el("div", "list");
+    var tierBoxes = [];
+    items.forEach(function (it, n) {
+      var id = "mss-c-" + (it.id || (t.key + n));
+      var row = el("label", "row");
+      row.htmlFor = id;
+      var cb = el("input");
+      cb.type = "checkbox";
+      cb.id = id;
+      boxes[it.id || (t.key + n)] = cb;
+      it._key = it.id || (t.key + n);
+      tierBoxes.push(cb);
+      var main = el("span", "row-main");
+      main.appendChild(el("span", "row-name", it.name));
+      if (it.path) main.appendChild(el("span", "row-path", it.path));
+      if (it.note) rich(main.appendChild(el("span", "row-note")), it.note);
+      if (it.cmd) {
+        var c = el("span", "row-cmd");
+        c.appendChild(el("b", null, "Cleanup: "));
+        c.appendChild(document.createTextNode(it.cmd));
+        main.appendChild(c);
+      }
+      var size = el("span", "row-size");
+      var num = el("span", "num", (it.est ? "~" : "") + fmt(it.gb));
+      num.appendChild(el("small", null, "GB"));
+      size.appendChild(num);
+      var meter = el("span", "meter");
+      var fill = el("i");
+      fill.style.width = Math.min(100, (Number(it.gb) || 0) / meterScale * 100) + "%";
+      fill.style.background = COLOR[t.key];
+      meter.appendChild(fill);
+      size.appendChild(meter);
+      row.appendChild(cb);
+      row.appendChild(main);
+      row.appendChild(size);
+      list.appendChild(row);
+    });
+    sec.appendChild(list);
+    $("mss-tiers").appendChild(sec);
+
+    syncs.push(function () {
+      all.textContent = tierBoxes.every(function (b) { return b.checked; }) ? "Clear these" : "Select all";
+    });
+    all.addEventListener("click", function () {
+      var every = tierBoxes.every(function (b) { return b.checked; });
+      tierBoxes.forEach(function (b) { b.checked = !every; });
+      update();
+    });
+    tierBoxes.forEach(function (b) { b.addEventListener("change", update); });
+  });
+
+  // Keep, notes, questions, footer
+  var KEEP = DATA.keep || [];
+  if (!KEEP.length) $("mss-keep-sec").hidden = true;
+  KEEP.forEach(function (k) {
+    var li = el("li");
+    li.appendChild(el("strong", null, k.name));
+    if (k.detail) rich(li.appendChild(el("span")), k.detail);
+    $("mss-keep").appendChild(li);
+  });
+  $("mss-notes-h").textContent = DATA.notes_title || (DONE.length ? "After the cleanup" : "Before you approve");
+  var NOTES = DATA.notes || [], QS = DATA.questions || [];
+  if (!NOTES.length) $("mss-notes-sec").hidden = true;
+  if (!QS.length) $("mss-q-sec").hidden = true;
+  NOTES.forEach(function (n) { $("mss-notes").appendChild(rich(el("li"), n)); });
+  QS.forEach(function (q) { $("mss-questions").appendChild(rich(el("li"), q)); });
+  $("mss-footer").textContent = DATA.footer ||
+    ("Measured with du, df, diskutil and simctl" + (scanned ? " on " + scanned : "") + ". Made with mac-storage-saver. Only approved items are ever deleted.");
+
+  // Approval tray
+  var trayText = $("mss-tray-text"), copyBtn = $("mss-copy"), clearBtn = $("mss-clear"), fallback = $("mss-fallback");
+  function selected() { return ITEMS.filter(function (i) { return boxes[i._key] && boxes[i._key].checked; }); }
+  function message() {
+    var sel = selected();
+    var lines = ["Approved to clean (about " + fmt(sum(sel)) + " GB):"];
+    TIERS.forEach(function (t) {
+      var inTier = sel.filter(function (i) { return i.tier === t.key; });
+      if (!inTier.length) return;
+      lines.push("", t.name + ":");
+      inTier.forEach(function (i) { lines.push("- " + i.name + " (" + (i.est ? "~" : "") + fmt(i.gb) + " GB) " + (i.path || "")); });
+    });
+    return lines.join("\n");
+  }
+  function update() {
+    var sel = selected();
+    trayText.textContent = "";
+    if (!sel.length) {
+      trayText.textContent = ITEMS.length ? "Tick the items you approve." : "Nothing left to approve.";
+    } else {
+      trayText.appendChild(document.createTextNode(sel.length + (sel.length === 1 ? " item" : " items") + " selected · "));
+      trayText.appendChild(el("b", null, "about " + fmt(sum(sel)) + " GB"));
+    }
+    copyBtn.disabled = !sel.length;
+    clearBtn.disabled = !sel.length;
+    fallback.hidden = true;
+    syncs.forEach(function (f) { f(); });
+    try { localStorage.setItem(KEY, JSON.stringify(sel.map(function (i) { return i._key; }))); } catch (e) {}
+  }
+  copyBtn.addEventListener("click", function () {
+    var text = message();
+    function reset() { copyBtn.textContent = "Copy approval message"; }
+    function showFallback() {
+      fallback.value = text;
+      fallback.hidden = false;
+      fallback.focus();
+      fallback.select();
+      copyBtn.textContent = "Select and copy the text below";
+      setTimeout(reset, 2500);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        copyBtn.textContent = "Copied. Paste it in the chat";
+        setTimeout(reset, 2500);
+      }, showFallback);
+    } else {
+      showFallback();
+    }
+  });
+  clearBtn.addEventListener("click", function () {
+    Object.keys(boxes).forEach(function (k) { boxes[k].checked = false; });
+    update();
+  });
+  try {
+    JSON.parse(localStorage.getItem(KEY) || "[]").forEach(function (k) { if (boxes[k]) boxes[k].checked = true; });
+  } catch (e) {}
+  update();
+})();
+</script>
+<!--MSS:BODY-END-->
+</body>
+</html>

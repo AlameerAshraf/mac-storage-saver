@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="360" viewBox="0 0 1280 360" role="img" aria-labelledby="t d">
+  <title id="t">mac-storage-saver</title>
+  <desc id="d">A Claude skill that finds what is filling your Mac's disk and cleans only what you approve.</desc>
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#121733"/>
+      <stop offset="1" stop-color="#0b1d1a"/>
+    </linearGradient>
+    <radialGradient id="glowA" cx="0.18" cy="0.2" r="0.6">
+      <stop offset="0" stop-color="#3a4fe0" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#3a4fe0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowB" cx="0.9" cy="1" r="0.6">
+      <stop offset="0" stop-color="#1fae74" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#1fae74" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3a4fe0"/>
+      <stop offset="0.55" stop-color="#2a3bb0"/>
+      <stop offset="1" stop-color="#0f7a5a"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="free" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b9f6d2"/>
+      <stop offset="1" stop-color="#4cd38b"/>
+    </linearGradient>
+    <linearGradient id="barFree" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#4cd38b"/>
+      <stop offset="1" stop-color="#b9f6d2"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1280" height="360" rx="28" fill="url(#card)"/>
+  <rect width="1280" height="360" rx="28" fill="url(#glowA)"/>
+  <rect width="1280" height="360" rx="28" fill="url(#glowB)"/>
+
+  <!-- Logo tile -->
+  <g transform="translate(72 64) scale(0.9)">
+    <rect x="8" y="8" width="240" height="240" rx="56" fill="url(#bg)"/>
+    <rect x="8" y="8" width="240" height="120" rx="56" fill="url(#gloss)"/>
+    <rect x="8.5" y="8.5" width="239" height="239" rx="55.5" fill="none" stroke="#ffffff" stroke-opacity="0.18"/>
+    <g transform="rotate(-90 128 128)">
+      <circle cx="128" cy="128" r="72" fill="none" stroke="#ffffff" stroke-opacity="0.16" stroke-width="22"/>
+      <circle cx="128" cy="128" r="72" fill="none" stroke="url(#free)" stroke-width="22" stroke-linecap="round" stroke-dasharray="248 452.4"/>
+      <circle cx="128" cy="128" r="72" fill="none" stroke="#ffc85c" stroke-width="22" stroke-linecap="round" stroke-dasharray="58 452.4" stroke-dashoffset="-272"/>
+      <circle cx="128" cy="128" r="72" fill="none" stroke="#9cc4ff" stroke-width="22" stroke-linecap="round" stroke-dasharray="40 452.4" stroke-dashoffset="-354"/>
+    </g>
+    <path d="M128 92 C131 115 141 125 164 128 C141 131 131 141 128 164 C125 141 115 131 92 128 C115 125 125 115 128 92 Z" fill="#ffffff"/>
+    <path d="M200 38 C201.6 48 205.5 52 216 54 C205.5 56 201.6 60 200 70 C198.4 60 194.5 56 184 54 C194.5 52 198.4 48 200 38 Z" fill="#ffffff" fill-opacity="0.9"/>
+  </g>
+
+  <!-- Wordmark -->
+  <g font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Helvetica, Arial, sans-serif">
+    <text x="368" y="146" fill="#ffffff" font-size="64" font-weight="800" letter-spacing="-1.5">mac-storage-saver</text>
+    <text x="370" y="192" fill="#c3cae8" font-size="24" font-weight="500">Find what's filling your Mac. Clean only what you approve.</text>
+  </g>
+
+  <!-- Before / after bars -->
+  <g font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="15" fill="#9aa4c7">
+    <text x="370" y="244">BEFORE</text>
+    <rect x="460" y="230" width="560" height="18" rx="9" fill="#ffffff" fill-opacity="0.12"/>
+    <rect x="958" y="230" width="62" height="18" rx="9" fill="#8b95b8"/>
+    <text x="1036" y="244" fill="#c3cae8">101 GB free</text>
+
+    <text x="370" y="284">AFTER</text>
+    <rect x="460" y="270" width="560" height="18" rx="9" fill="#ffffff" fill-opacity="0.12"/>
+    <rect x="799" y="270" width="221" height="18" rx="9" fill="url(#barFree)"/>
+    <text x="1036" y="284" fill="#b9f6d2" font-weight="700">365 GB free</text>
+  </g>
+</svg>

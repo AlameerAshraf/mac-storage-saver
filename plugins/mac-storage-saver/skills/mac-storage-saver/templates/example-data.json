@@ -1,0 +1,94 @@
+{
+  "title": "Mac Storage Audit",
+  "scanned": "8 Nov 2026",
+  "disk": {
+    "total_gb": 926,
+    "free_gb": 365,
+    "free_before_gb": 101,
+    "system_volumes_gb": 23,
+    "before_label": "This morning",
+    "now_label": "Now"
+  },
+  "disk_gained_gb": 264,
+  "other_label": "Apps, system, source, not measured",
+  "done": [
+    { "name": "Simulators", "gb": 40, "detail": "Deleted 112 and kept one iPhone 17 Pro Max on iOS 26.5. Devices folder went from 45 GB to 5.1 GB." },
+    { "name": "Old iPhone debug symbols", "gb": 39, "detail": "Deleted 9 iOS versions and kept the newest 2." },
+    { "name": "Docker Desktop disk", "gb": 36, "detail": "`Docker.raw`, left behind after Docker Desktop was uninstalled. Moved to Trash, then emptied." },
+    { "name": "Simulator system caches", "gb": 24, "detail": "Cleared with `xcrun simctl runtime dyld_shared_cache remove --all`, since macOS blocks deleting them by hand." },
+    { "name": "Old iOS simulator runtimes", "gb": 23, "detail": "Deleted 18.1, 18.2, 18.4, 26.1, 26.2 and 26.4 and kept 26.5. 25 GB of their files are stuck." },
+    { "name": "Project build output", "gb": 23, "detail": "150 gitignored build, Pods, dist, .next, .gradle and .expo folders. Skipped vendor packages and anything git doesn't ignore." },
+    { "name": "Developer and app caches", "gb": 19, "detail": "Yarn, Cypress, Playwright, CocoaPods, Spotify, Go, pnpm, Homebrew, Chrome-headless and Android Studio." },
+    { "name": "Android emulator Pixel_10_Pro_XL", "gb": 16, "detail": "The whole virtual device. Moved to Trash, then emptied." },
+    { "name": "WhatsApp media", "gb": 16, "detail": "Photos, videos and voice notes. Chats were kept." },
+    { "name": "CapCut projects", "gb": 12, "detail": "Leftover data in `~/Movies/CapCut`. CapCut isn't installed." },
+    { "name": "pnpm package store", "gb": 10, "detail": "Pruned the current store and deleted the old v3 and v10 stores." },
+    { "name": "Cursor app data", "gb": 9.9, "detail": "Chat history, extension data and workspace state. Settings and keybindings were kept." },
+    { "name": "Chrome cache", "gb": 6.5, "detail": "All 4 profiles, after Chrome was fully quit. Logins and history were kept." },
+    { "name": "uv Python package cache", "gb": 6.4, "detail": "`uv cache clean`." },
+    { "name": "Hugging Face models", "gb": 4.4, "detail": "Three vision and speech models; they download again when needed." }
+  ],
+  "stuck": [
+    { "name": "iOS 18.1, 18.2 and 18.4 runtime files", "gb": 25, "detail": "Xcode no longer lists these runtimes, but their files are still in `/System/Library/AssetsV2`. macOS protects them, so not even sudo can delete them. Check Xcode → Settings → Components; a restart may clear them." }
+  ],
+  "items": [
+    { "id": "derived", "tier": "safe", "gb": 67, "name": "Xcode build cache", "path": "~/Library/Developer/Xcode/DerivedData",
+      "note": "Xcode rebuilds it on the next build. That first build is slower.",
+      "cmd": "rm -rf ~/Library/Developer/Xcode/DerivedData/*" },
+    { "id": "nm", "tier": "re", "gb": 62, "name": "node_modules in 207 project folders", "path": "~/Projects",
+      "note": "Biggest: mobile-app 13.8, shop-app 7.7, wallet-app 5.4, budget-app 2.9 GB. `yarn`, `npm` or `pnpm install` restores it.",
+      "cmd": "rm -rf <project>/node_modules for the projects you name" },
+    { "id": "orb", "tier": "call", "gb": 79, "name": "OrbStack containers and images", "path": "~/Library/Group Containers/HUAQ24HBR6.dev.orbstack",
+      "note": "Prune unused images and volumes from inside OrbStack. Deleting the disk image file by hand wipes every container." },
+    { "id": "chrome", "tier": "call", "gb": 12, "name": "Chrome profile data", "path": "~/Library/Application Support/Google/Chrome",
+      "note": "History, extensions and site storage. Clear it from inside Chrome only." },
+    { "id": "claudevm", "tier": "call", "gb": 11, "name": "Claude desktop VM bundles", "path": "~/Library/Application Support/Claude/vm_bundles",
+      "note": "Used by the Claude app's sandbox and downloaded again if missing." },
+    { "id": "archives", "tier": "call", "gb": 9.6, "name": "Xcode Archives (32 builds)", "path": "~/Library/Developer/Xcode/Archives",
+      "note": "Needed to read crash reports for shipped builds, unless the dSYMs are uploaded." },
+    { "id": "edits", "tier": "call", "gb": 8.7, "name": "Video edits", "path": "~/Movies/Edits",
+      "note": "Exported or in-progress edits." },
+    { "id": "geny", "tier": "call", "gb": 7.6, "name": "Genymotion virtual devices", "path": "~/.Genymobile/Genymotion",
+      "note": "Delete devices you no longer use from the Genymotion app." },
+    { "id": "reel", "tier": "call", "gb": 5.3, "name": "promo-reel build folder", "path": "~/Projects/shop/marketing/promo-reel/build",
+      "note": "Probably a bundle that rebuilds. Check it for rendered videos before deleting." }
+  ],
+  "rank": [
+    { "name": "OrbStack containers", "path": "~/Library/Group Containers/…dev.orbstack", "gb": 79, "tier": "call" },
+    { "name": "Xcode build cache", "path": "~/Library/Developer/Xcode/DerivedData", "gb": 67, "tier": "safe" },
+    { "name": "node_modules (207 folders)", "path": "~/Projects", "gb": 62, "tier": "re" },
+    { "name": "iOS runtime files (25 GB stuck)", "path": "/System/Library/AssetsV2", "gb": 33, "tier": "stuck" },
+    { "name": "Installed apps", "path": "/Applications", "gb": 23, "tier": "keep" },
+    { "name": "Claude desktop app", "path": "~/Library/Application Support/Claude", "gb": 14, "tier": "call" },
+    { "name": "Chrome profile", "path": "~/Library/Application Support/Google/Chrome", "gb": 12, "tier": "call" },
+    { "name": "iPhone debug symbols (2 kept)", "path": "~/Library/Developer/Xcode/iOS DeviceSupport", "gb": 12, "tier": "keep" },
+    { "name": "Xcode Archives", "path": "~/Library/Developer/Xcode/Archives", "gb": 9.6, "tier": "call" },
+    { "name": "Video edits", "path": "~/Movies/Edits", "gb": 8.7, "tier": "call" },
+    { "name": "Genymotion devices", "path": "~/.Genymobile/Genymotion", "gb": 7.6, "tier": "call" },
+    { "name": "App caches left", "path": "~/Library/Caches", "gb": 6.3, "tier": "keep" },
+    { "name": "iPhone 17 Pro Max simulator", "path": "~/Library/Developer/CoreSimulator/Devices", "gb": 5.1, "tier": "keep" }
+  ],
+  "keep": [
+    { "name": "iPhone 17 Pro Max simulator", "detail": "iOS 26.5, plus its 7.9 GB runtime. The one you chose to keep." },
+    { "name": "iPhone debug symbols", "detail": "The newest 2 iOS versions · 12 GB" },
+    { "name": "macOS system volumes", "detail": "System, Preboot, Recovery and VM · 23 GB" },
+    { "name": "Installed apps", "detail": "`/Applications` · 23 GB. Uninstall apps you don't use rather than deleting their parts." },
+    { "name": "Keychains", "detail": "Your saved passwords and certificates." },
+    { "name": "iCloud Drive", "detail": "`~/Library/Mobile Documents`" },
+    { "name": "System databases and swap", "detail": "`/private/var/db` · `/private/var/vm`" },
+    { "name": "PHP and Python dependencies", "detail": "`build` and `dist` folders inside `vendor/` and `site-packages/` belong to packages." }
+  ],
+  "notes": [
+    "Run `pod install` before the next iOS build in projects whose Pods were removed. The first Android builds will be slow.",
+    "The first boot of the kept simulator is slow while macOS rebuilds its cache.",
+    "WhatsApp shows old photos and videos as needing a download. They come back only if they're still on the phone.",
+    "Cursor asks you to sign in again. Settings and keybindings were kept.",
+    "About 285 GB of folders were deleted, but the disk gained 264 GB. Some deleted files shared space with files that stay (APFS clones, pnpm hard links, sparse disk images).",
+    "Sizes are binary gigabytes, as `du` and `df` report them. Finder shows about 7% more."
+  ],
+  "questions": [
+    "Which projects are active? Only inactive ones should lose node_modules.",
+    "Do you still use Genymotion?",
+    "Can OrbStack's unused images and volumes be pruned? That's the biggest item left."
+  ]
+}

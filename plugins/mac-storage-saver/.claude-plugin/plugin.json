@@ -1,0 +1,13 @@
+{
+  "name": "mac-storage-saver",
+  "description": "Find what's filling your Mac's disk and clean only what you approve: read-only scan, four-tier classification, an HTML report with an approval checklist, and safe per-item cleanup.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Alameer Ashraf",
+    "url": "https://github.com/AlameerAshraf"
+  },
+  "homepage": "https://github.com/AlameerAshraf/mac-storage-saver",
+  "repository": "https://github.com/AlameerAshraf/mac-storage-saver",
+  "license": "MIT",
+  "keywords": ["macos", "disk-space", "storage", "cleanup", "xcode", "ios-simulator", "docker"]
+}
